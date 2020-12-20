@@ -7,10 +7,9 @@ import javafx.scene.text.*;
 
 public class Board extends Parent {
     VBox rows = new VBox();
-    boolean enemy = false;
+    boolean enemy;
     int ships = 5;
-    boolean[] types = {false, false, false, false, false};
-
+    String[] conditions = {null, null, null, null, null};
 
     public Board(boolean enemy) {
         this.enemy = enemy;
@@ -36,24 +35,22 @@ public class Board extends Parent {
     //0 = all good, 1 = InvalidCountException
     public int placeShip (Ship ship, int x, int y){
         if (!isValidPoint(x, y)) return 1;
+        if(conditions[ship.type - 1] != null) return 4;
+        else conditions[ship.type - 1] = "intact";
         if (ship.vertical) {
-            if(types[ship.type - 1]) return 4;
-            else types[ship.type - 1] = true;
             for (int i = x; i < x + ship.length; i++) {
-                if(checkAdjacentTilesException(i, y, ship)) return 3;
                 Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(i + 1)).getChildren().get(1)).getChildren().get(y);
                 if(point.ship != null) return 2;
+                if(checkAdjacentTilesException(i, y, ship)) return 3;
                 point.ship = ship;
                 if (!this.enemy)
                     point.setFill(Color.rgb(155, 220, 88));
             }
         } else {
-            if(types[ship.type - 1]) return 4;
-            else types[ship.type - 1] = true;
             for (int i = y; i < y + +ship.length; i++) {
-                if(checkAdjacentTilesException(x, i, ship)) return 3;
                 Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(x + 1)).getChildren().get(1)).getChildren().get(i);
                 if(point.ship != null) return 2;
+                if(checkAdjacentTilesException(x, i, ship)) return 3;
                 point.ship = ship;
                 if (!this.enemy)
                     point.setFill(Color.rgb(155, 220, 88));
@@ -63,12 +60,18 @@ public class Board extends Parent {
     }
 
     //returns points
-    public int placeShot (int x, int y){
+    public int placeShot (int x, int y, Player player){
         Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(x+1)).getChildren().get(1)).getChildren().get(y);
         int returnValue = 0;
-        if(point.shoot()) returnValue = point.ship.valueShot;
+        if(point.shoot()){
+            returnValue = point.ship.valueShot;
+            conditions[point.ship.type - 1] = "damaged";
+            player.addShot(new Shot(x, y, "yes", point.ship.type));
+        }
+        else player.addShot(new Shot(x, y, "no", 0));
         if(returnValue > 0 && !point.ship.isAlive()){
             ships--;
+            conditions[point.ship.type - 1] = "sunken";
             returnValue += point.ship.totalValue;
         }
         return returnValue;

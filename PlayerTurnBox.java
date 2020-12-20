@@ -9,40 +9,31 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.*;
 
-public class ChooseBox {
-    static String scenario;
-
-    public static String display(){
+public class PlayerTurnBox {
+    public static void display(String s){
         Stage window = new Stage();
         window.initModality(Modality.APPLICATION_MODAL);
-        window.setTitle("Choose Scenario ID");
+        window.setTitle("Who's turn is it?");
 
         GridPane form = new GridPane();
         form.setAlignment(Pos.CENTER);
-        form.setHgap(10);
+        form.setHgap(5);
         form.setVgap(10);
         form.setPadding(new Insets(25, 25, 25, 25));
-        Text title = new Text("Please type scenario ID:");
-        title.setFont(Font.font("Verdana", FontWeight.NORMAL, 12));
+        Text title = new Text(s);
+        title.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
         form.add(title, 0, 0, 2, 1);
-        TextField scenarioID = new TextField();
-        form.add(scenarioID, 1, 1);
-        Button btn = new Button("Submit");
-        HBox hbBtn = new HBox(10);
+        Button btn = new Button("Ok");
+        HBox hbBtn = new HBox(5);
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(btn);
-        form.add(hbBtn, 1, 4);
+        form.add(hbBtn, 1, 2);
 
-        btn.setOnAction(e -> {
-            scenario = scenarioID.getText();
-            window.close();
-        });
+        btn.setOnAction(e -> window.close());
 
         VBox layout = new VBox(form);
-        Scene scene = new Scene(layout, 400, 150);
+        Scene scene = new Scene(layout, 270, 100);
         window.setScene(scene);
         window.showAndWait();
-
-        return scenario;
     }
 }

@@ -1,5 +1,3 @@
-import java.util.Objects;
-
 public class Ship {
     int type; //1 => Carrier, 2 => Battleship, 3 => Cruiser , 4 => Submarine, 5 => Destroyer
     int length;
@@ -10,8 +8,7 @@ public class Ship {
 
     public Ship(int type, int vertical){
         this.type = type;
-        if(vertical == 2) this.vertical = true;
-        else this.vertical = false;
+        this.vertical = vertical == 2;
         if(type == 1){
             this.length = 5;
             this.valueShot = 350;
@@ -45,7 +42,6 @@ public class Ship {
     }
 
     public boolean isAlive(){
-        if(this.health > 0) return true;
-        return false;
+        return this.health > 0;
     }
 }

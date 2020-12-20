@@ -19,6 +19,8 @@ public class Battleship extends Application{
     Stage window;
     BorderPane layout;
     Board enemyBoard, playerBoard;
+    Player player = new Player();
+    Player enemy = new Player();
     int xLastShot = -1;
     int yLastShot = -1;
     int next = -1; //1 = up, 2 = down, 3 = left, 4 = right
@@ -27,12 +29,6 @@ public class Battleship extends Application{
     GridPane form;
     VBox topBar;
     Text ShipsPlayer, ShipsPlayerValue, PointsPlayer, PointsPlayerValue, ShotsPlayer, ShotsPlayerValue, ShipsEnemy, ShipsEnemyValue, PointsEnemy, PointsEnemyValue, ShotsEnemy, ShotsEnemyValue;
-    int playerTotalShots = 0;
-    int playerSuccessfulShots = 0;
-    int enemyTotalShots = 0;
-    int enemySuccessfulShots = 0;
-    int playerTotalPoints = 0;
-    int enemyTotalPoints = 0;
     boolean loaded = false;
     String scenario;
     boolean firstPlayer; //true for player, false for enemy;
@@ -43,8 +39,8 @@ public class Battleship extends Application{
             enemyBoard = new Board(true);
             String lineEnemy = enemy.readLine();
             while(lineEnemy!=null){
-                String[] a = lineEnemy.split("");
-                int e = enemyBoard.placeShip(new Ship(Integer.parseInt(a[0]), Integer.parseInt(a[6])), Integer.parseInt(a[2]), Integer.parseInt(a[4]));
+                String[] a = lineEnemy.split(",");
+                int e = enemyBoard.placeShip(new Ship(Integer.parseInt(a[0]), Integer.parseInt(a[3])), Integer.parseInt(a[1]), Integer.parseInt(a[2]));
                 if(e == 1) throw new OversizeException();
                 if(e == 2) throw new OverlapTilesException();
                 if(e == 3) throw new AdjacentTilesException();
@@ -56,8 +52,8 @@ public class Battleship extends Application{
             playerBoard = new Board(false);
             String linePlayer = player.readLine();
             while(linePlayer!=null){
-                String[] a = linePlayer.split("");
-                int e = playerBoard.placeShip(new Ship(Integer.parseInt(a[0]), Integer.parseInt(a[6])), Integer.parseInt(a[2]), Integer.parseInt(a[4]));
+                String[] a = linePlayer.split(",");
+                int e = playerBoard.placeShip(new Ship(Integer.parseInt(a[0]), Integer.parseInt(a[3])), Integer.parseInt(a[1]), Integer.parseInt(a[2]));
                 if(e == 1) throw new OversizeException();
                 if(e == 2) throw new OverlapTilesException();
                 if(e == 3) throw new AdjacentTilesException();
@@ -67,48 +63,48 @@ public class Battleship extends Application{
 
             loaded = true;
             initialMessage.setText("All set!\nPlease go to Application->Start to start the game.");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.rgb(0, 150, 201));
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
         } catch (OversizeException e1) {
             initialMessage.setText("Some of the ships caused Oversize Exception!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
             loaded = false;
         } catch (OverlapTilesException e2) {
             initialMessage.setText("Some of the ships caused Overlap Tiles Exception!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
             loaded = false;
         }catch (AdjacentTilesException e3) {
             initialMessage.setText("Some of the ships caused Adjacent Tiles Exception!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
             loaded = false;
         }catch (InvalidCountException e4) {
             initialMessage.setText("Some of the ships caused Invalid Count Exception!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
             loaded = false;
         }catch (FileNotFoundException e5) {
             initialMessage.setText("The file you chose cannot be found!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
             loaded = false;
         }catch (Exception e) {
             initialMessage.setText("Some exception occurred!\n"+e);
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
@@ -119,7 +115,7 @@ public class Battleship extends Application{
     public void start() {
         if(!loaded){
             initialMessage.setText("You need to place your ships first!\nPlease go to Application->Load and choose scenario ID.");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
@@ -127,45 +123,45 @@ public class Battleship extends Application{
         else {
             restart();
             if(choosePlayer()){
-                PlayerMoveBox.display("It's your turn!");
+                PlayerTurnBox.display("You start first!");
                 firstPlayer = true;
             }
             else{
-                PlayerMoveBox.display("It's your enemy's turn!");
+                PlayerTurnBox.display("Your enemy starts first!");
                 firstPlayer = false;
             }
             //place top bar
             ShipsPlayer = new Text("    Your ships:  ");
             ShipsPlayerValue = new Text(Integer.toString(playerBoard.ships));
-            ShipsPlayer.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            ShipsPlayerValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            ShipsPlayer.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            ShipsPlayerValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             PointsPlayer = new Text("    Your points:  ");
             PointsPlayerValue = new Text("0");
-            PointsPlayer.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            PointsPlayerValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            PointsPlayer.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            PointsPlayerValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             ShotsPlayer = new Text("    Your successful shots:  ");
             ShotsPlayerValue = new Text("0%");
-            ShotsPlayer.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            ShotsPlayerValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            ShotsPlayer.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            ShotsPlayerValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             HBox playerDetails = new HBox(ShipsPlayer, ShipsPlayerValue, PointsPlayer, PointsPlayerValue, ShotsPlayer, ShotsPlayerValue);
             playerDetails.setPadding(new Insets(10, 25, 5, 25));
             ShipsEnemy = new Text("    Enemy's ships:  ");
             ShipsEnemyValue = new Text(Integer.toString(enemyBoard.ships));
-            ShipsEnemy.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            ShipsEnemyValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            ShipsEnemy.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            ShipsEnemyValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             PointsEnemy = new Text("    Enemy's points:  ");
             PointsEnemyValue = new Text("0");
-            PointsEnemy.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            PointsEnemyValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            PointsEnemy.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            PointsEnemyValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             ShotsEnemy = new Text("    Enemy's successful shots:  ");
             ShotsEnemyValue = new Text(0 + "%");
-            ShotsEnemy.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-            ShotsEnemyValue.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            ShotsEnemy.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
+            ShotsEnemyValue.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             HBox enemyDetails = new HBox(ShipsEnemy, ShipsEnemyValue, PointsEnemy, PointsEnemyValue, ShotsEnemy, ShotsEnemyValue);
             enemyDetails.setPadding(new Insets(10, 25, 0, 25));
 
             //place boards
-            HBox boards = new HBox(50, enemyBoard, playerBoard);
+            HBox boards = new HBox(50, playerBoard, enemyBoard);
             boards.setAlignment(Pos.CENTER);
             boards.setPadding(new Insets(25, 25, 5, 25));
             topBar = new VBox(playerDetails, enemyDetails, boards);
@@ -178,7 +174,7 @@ public class Battleship extends Application{
             form.setVgap(10);
             form.setPadding(new Insets(0, 25, 5, 25));
             Text title = new Text("Place a new shot!");
-            title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
+            title.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
             form.add(title, 0, 0, 2, 1);
 
             Label row = new Label("Row number");
@@ -198,7 +194,7 @@ public class Battleship extends Application{
             hbBtn.getChildren().add(btn);
             form.add(hbBtn, 1, 4);
 
-            form.add(actiontarget, 1, 6);
+            form.add(actiontarget, 1, 6, 2, 1);
 
             layout.setBottom(form);
             EventHandler<ActionEvent> event = e -> {
@@ -228,120 +224,20 @@ public class Battleship extends Application{
 
     public void restart(){
         if(loaded) load();
-        playerTotalShots = 0;
-        playerSuccessfulShots = 0;
-        enemyTotalShots = 0;
-        enemySuccessfulShots = 0;
-        playerTotalPoints = 0;
-        enemyTotalPoints = 0;
+        player.TotalShots = 0;
+        player.SuccessfulShots = 0;
+        enemy.TotalShots = 0;
+        enemy.SuccessfulShots = 0;
+        player.TotalPoints = 0;
+        enemy.TotalPoints = 0;
     }
 
     public void enemyMove(){
         if(xLastShot != -1){
-            if(isValidPoint(xLastShot-1, yLastShot) && (next == -1 || next == 1)){
-                Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(xLastShot)).getChildren().get(1)).getChildren().get(yLastShot);
-                if (!point.isShot){
-                    enemyTotalShots++;
-                    if(enemyTotalShots == 40) displayWinner(3);
-                    int playerShips = playerBoard.ships;
-                    int points = playerBoard.placeShot(xLastShot-1, yLastShot);
-                    if(points > 0){
-                        xLastShot--;
-                        enemySuccessfulShots++;
-                        enemyTotalPoints += points;
-                        PointsEnemyValue.setText(Integer.toString(enemyTotalPoints));
-                        next = 1;
-                    }
-                    else next = 2;
-                    if(playerBoard.ships != playerShips){
-                        ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                        if(playerBoard.ships == 0) displayWinner(2);
-                        next = -1;
-                        xLastShot = -1;
-                        yLastShot = -1;
-                    }
-                    ShotsEnemyValue.setText(enemySuccessfulShots*100/enemyTotalShots+"%");
-                    return;
-                }
-            }
-            if(isValidPoint(xLastShot+1, yLastShot) && (next == -1 || next == 2)){
-                Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(xLastShot+2)).getChildren().get(1)).getChildren().get(yLastShot);
-                if (!point.isShot){
-                    enemyTotalShots++;
-                    if(enemyTotalShots == 40) displayWinner(3);
-                    int playerShips = playerBoard.ships;
-                    int points = playerBoard.placeShot(xLastShot+1, yLastShot);
-                    if(points > 0){
-                        xLastShot++;
-                        enemySuccessfulShots++;
-                        enemyTotalPoints += points;
-                        PointsEnemyValue.setText(Integer.toString(enemyTotalPoints));
-                        next = 2;
-                    }
-                    else next = -1;
-                    if(playerBoard.ships != playerShips){
-                        ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                        if(playerBoard.ships == 0) displayWinner(2);
-                        next = -1;
-                        xLastShot = -1;
-                        yLastShot = -1;
-                    }
-                    ShotsEnemyValue.setText(enemySuccessfulShots*100/enemyTotalShots+"%");
-                    return;
-                }
-            }
-            if(isValidPoint(xLastShot, yLastShot-1) && (next == -1 || next == 3)){
-                Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(xLastShot+1)).getChildren().get(1)).getChildren().get(yLastShot-1);
-                if (!point.isShot){
-                    enemyTotalShots++;
-                    if(enemyTotalShots == 40) displayWinner(3);
-                    int playerShips = playerBoard.ships;
-                    int points = playerBoard.placeShot(xLastShot, yLastShot-1);
-                    if(points > 0){
-                        yLastShot--;
-                        enemySuccessfulShots++;
-                        enemyTotalPoints += points;
-                        PointsEnemyValue.setText(Integer.toString(enemyTotalPoints));
-                        next = 3;
-                    }
-                    else next = 4;
-                    if(playerBoard.ships != playerShips){
-                        ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                        if(playerBoard.ships == 0) displayWinner(2);
-                        next = -1;
-                        xLastShot = -1;
-                        yLastShot = -1;
-                    }
-                    ShotsEnemyValue.setText(enemySuccessfulShots*100/enemyTotalShots+"%");
-                    return;
-                }
-            }
-            if(isValidPoint(xLastShot, yLastShot+1) && (next == -1 || next == 4)){
-                Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(xLastShot+1)).getChildren().get(1)).getChildren().get(yLastShot+1);
-                if (!point.isShot){
-                    enemyTotalShots++;
-                    if(enemyTotalShots == 40) displayWinner(3);
-                    int playerShips = playerBoard.ships;
-                    int points = playerBoard.placeShot(xLastShot, yLastShot+1);
-                    if(points > 0){
-                        yLastShot++;
-                        enemySuccessfulShots++;
-                        enemyTotalPoints += points;
-                        PointsEnemyValue.setText(Integer.toString(enemyTotalPoints));
-                        next = 4;
-                    }
-                    else next = -1;
-                    if(playerBoard.ships != playerShips){
-                        ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                        if(playerBoard.ships == 0) displayWinner(2);
-                        next = -1;
-                        xLastShot = -1;
-                        yLastShot = -1;
-                    }
-                    ShotsEnemyValue.setText(enemySuccessfulShots*100/enemyTotalShots+"%");
-                    return;
-                }
-            }
+            if(enemyNeighbourMove(xLastShot-1, yLastShot, 1, 1, 2)) return;
+            if(enemyNeighbourMove(xLastShot+1, yLastShot, 2, 2, -1)) return;
+            if(enemyNeighbourMove(xLastShot, yLastShot-1, 3, 3, 4)) return;
+            if(enemyNeighbourMove(xLastShot, yLastShot+1, 4, 4, -1)) return;
         }
         Random rand = new Random();
         while(true) {
@@ -349,25 +245,57 @@ public class Battleship extends Application{
             int y = rand.nextInt(10);
             Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(x + 1)).getChildren().get(1)).getChildren().get(y);
             if (!point.isShot) {
-                enemyTotalShots++;
-                if(enemyTotalShots == 40) displayWinner(3);
+                enemy.TotalShots++;
+                if(enemy.TotalShots == 40) displayWinner(3);
                 int playerShips = playerBoard.ships;
-                int points = playerBoard.placeShot(x, y);
+                int points = playerBoard.placeShot(x, y, enemy);
                 if(points > 0){
                     xLastShot = x;
                     yLastShot = y;
-                    enemySuccessfulShots++;
-                    enemyTotalPoints += points;
-                    PointsEnemyValue.setText(Integer.toString(enemyTotalPoints));
+                    enemy.SuccessfulShots++;
+                    enemy.TotalPoints += points;
+                    PointsEnemyValue.setText(Integer.toString(enemy.TotalPoints));
                 }
                 if(playerBoard.ships != playerShips){
                     ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
                     if(playerBoard.ships == 0) displayWinner(2);
                 }
-                ShotsEnemyValue.setText(enemySuccessfulShots*100/enemyTotalShots+"%");
+                ShotsEnemyValue.setText(enemy.SuccessfulShots*100/enemy.TotalShots+"%");
                 break;
             }
         }
+    }
+
+    //if the last enemy's shot was successful, they'll try shooting neighbour point
+    public boolean enemyNeighbourMove(int x, int y, int currentNext, int nextIfShotSuccessful, int nextIfShotNotSuccessful){
+        if(isValidPoint(x, y) && (next == -1 || next == currentNext)){
+            Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(x+1)).getChildren().get(1)).getChildren().get(y);
+            if (!point.isShot){
+                enemy.TotalShots++;
+                if(enemy.TotalShots == 40) displayWinner(3);
+                int playerShips = playerBoard.ships;
+                int points = playerBoard.placeShot(x, y, enemy);
+                if(points > 0){
+                    xLastShot = x;
+                    yLastShot = y;
+                    enemy.SuccessfulShots++;
+                    enemy.TotalPoints += points;
+                    PointsEnemyValue.setText(Integer.toString(enemy.TotalPoints));
+                    next = nextIfShotSuccessful;
+                }
+                else next = nextIfShotNotSuccessful;
+                if(playerBoard.ships != playerShips){
+                    ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
+                    if(playerBoard.ships == 0) displayWinner(2);
+                    next = -1;
+                    xLastShot = -1;
+                    yLastShot = -1;
+                }
+                ShotsEnemyValue.setText(enemy.SuccessfulShots*100/enemy.TotalShots+"%");
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isValidPoint(int x, int y){
@@ -375,16 +303,16 @@ public class Battleship extends Application{
     }
 
     public void playerMove(int x, int y){
-        playerTotalShots++;
-        if(playerTotalShots == 40) displayWinner(3);
+        player.TotalShots++;
+        if(player.TotalShots == 40) displayWinner(3);
         int enemyShips = enemyBoard.ships;
-        int points = enemyBoard.placeShot(x, y);
+        int points = enemyBoard.placeShot(x, y, player);
         if(points > 0){
-            playerSuccessfulShots++;
-            playerTotalPoints += points;
-            PointsPlayerValue.setText(Integer.toString(playerTotalPoints));
+            player.SuccessfulShots++;
+            player.TotalPoints += points;
+            PointsPlayerValue.setText(Integer.toString(player.TotalPoints));
         }
-        ShotsPlayerValue.setText(playerSuccessfulShots*100/playerTotalShots+"%");
+        ShotsPlayerValue.setText(player.SuccessfulShots*100/player.TotalShots+"%");
         if(enemyBoard.ships != enemyShips){
             ShipsEnemyValue.setText(Integer.toString(enemyBoard.ships));
             if(enemyBoard.ships == 0) displayWinner(1);
@@ -398,24 +326,24 @@ public class Battleship extends Application{
     }
 
     //1 = player won, 2 = enemy won, 3 = draw
-    public void displayWinner(int player){
-        if(player == 1 || (player == 3 && playerTotalPoints > enemyTotalPoints)){
+    public void displayWinner(int winner){
+        if(winner == 1 || (winner == 3 && player.TotalPoints > enemy.TotalPoints)){
             initialMessage.setText("Congratulations! You won!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 25));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 25));
             initialMessage.setFill(Color.rgb(0, 150, 201));
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
         }
-        else if(player == 2 || (player == 3 && playerTotalPoints < enemyTotalPoints)){
+        else if(winner == 2 || (winner == 3 && player.TotalPoints < enemy.TotalPoints)){
             initialMessage.setText("Oh no! You lost!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 25));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 25));
             initialMessage.setFill(Color.FIREBRICK);
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
         }
         else {
             initialMessage.setText("Draw!");
-            initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 25));
+            initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 25));
             initialMessage.setFill(Color.rgb(0, 150, 201));
             layout.setCenter(initialMessage);
             layout.setBottom(actiontarget);
@@ -434,30 +362,46 @@ public class Battleship extends Application{
         window.setTitle("MediaLab Battleship");
 
         //menu
-        MenuItem start = new MenuItem("Start");
+        MenuItem start = new MenuItem("Start       ");
         start.setOnAction(e -> start());
-        MenuItem load = new MenuItem("Load");
+        MenuItem load = new MenuItem("Load       ");
         load.setOnAction(e -> {
             scenario = ChooseBox.display();
             load();
         });
-        MenuItem exit = new MenuItem("Exit");
+        MenuItem exit = new MenuItem("Exit       ");
         exit.setOnAction(e -> window.close());
 
-        Menu menu = new Menu("Application");
-        menu.getItems().add(start);
-        menu.getItems().add(load);
-        menu.getItems().add(new SeparatorMenuItem());
-        menu.getItems().add(exit);
+        Menu application = new Menu("Application");
+        application.getItems().add(start);
+        application.getItems().add(load);
+        application.getItems().add(new SeparatorMenuItem());
+        application.getItems().add(exit);
+
+        MenuItem enemyShips = new MenuItem("Enemy ships");
+        enemyShips.setOnAction(e -> {
+            if(loaded) EnemyShipsBox.display(enemyBoard);
+            else EnemyShipsBox.display("You need to place you ships first!");
+        });
+        MenuItem playerShots = new MenuItem("Player Shots");
+        playerShots.setOnAction(e -> PlayerMoveBox.display(player));
+        MenuItem enemyShots = new MenuItem("Enemy Shots");
+        enemyShots.setOnAction(e -> PlayerMoveBox.display(enemy));
+        Menu details = new Menu("Details");
+        details.getItems().add(enemyShips);
+        details.getItems().add(playerShots);
+        details.getItems().add(enemyShots);
 
         MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().addAll(menu);
+        menuBar.getMenus().addAll(application, details);
         layout.setTop(menuBar);
 
+        //initial welcome message
         initialMessage.setText("Welcome! First, you need to load your ships.\nPlease go to Application->Load and choose scenario ID.");
-        initialMessage.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        initialMessage.setFont(Font.font("Verdana", FontWeight.NORMAL, 20));
         initialMessage.setFill(Color.rgb(0, 150, 201));
         layout.setCenter(initialMessage);
+
         //scene
         Scene scene = new Scene(layout, 900, 650);
         window.setScene(scene);
