@@ -35,7 +35,8 @@ public class Battleship extends Application{
 
     public void load(){
         try {
-            BufferedReader enemy = new BufferedReader(new FileReader("C:\\Users\\marak\\Documents\\Multimedia\\src\\enemy_" + scenario + ".txt"));
+            String currentDirectory = System.getProperty("user.dir");
+            BufferedReader enemy = new BufferedReader(new FileReader(currentDirectory + "\\src\\enemy_" + scenario + ".txt"));
             enemyBoard = new Board(true);
             String lineEnemy = enemy.readLine();
             while(lineEnemy!=null){
@@ -48,7 +49,7 @@ public class Battleship extends Application{
                 lineEnemy = enemy.readLine();
             }
 
-            BufferedReader player = new BufferedReader(new FileReader("C:\\Users\\marak\\Documents\\Multimedia\\src\\player_" + scenario + ".txt"));
+            BufferedReader player = new BufferedReader(new FileReader(currentDirectory + "\\src\\player_" + scenario + ".txt"));
             playerBoard = new Board(false);
             String linePlayer = player.readLine();
             while(linePlayer!=null){
