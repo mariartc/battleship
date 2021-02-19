@@ -12,18 +12,16 @@ import javafx.geometry.*;
 import javafx.scene.text.*;
 import java.io.*;
 import java.lang.*;
-import java.util.*;
 import javafx.scene.paint.Color;
+
+import exceptions.*;
 
 public class Battleship extends Application{
     Stage window;
     BorderPane layout;
-    Board enemyBoard, playerBoard;
+    public Board enemyBoard, playerBoard;
     Player player = new Player();
-    Player enemy = new Player();
-    int xLastShot = -1;
-    int yLastShot = -1;
-    int next = -1; //1 = up, 2 = down, 3 = left, 4 = right
+    Enemy enemy = new Enemy();
     Text actiontarget = new Text();
     Text initialMessage = new Text();
     GridPane form;
@@ -36,7 +34,7 @@ public class Battleship extends Application{
     public void load(){
         try {
             String currentDirectory = System.getProperty("user.dir");
-            BufferedReader enemy = new BufferedReader(new FileReader(currentDirectory + "\\src\\enemy_" + scenario + ".txt"));
+            BufferedReader enemy = new BufferedReader(new FileReader(currentDirectory + "\\medialab\\enemy_" + scenario + ".txt"));
             enemyBoard = new Board(true);
             String lineEnemy = enemy.readLine();
             while(lineEnemy!=null){
@@ -49,7 +47,7 @@ public class Battleship extends Application{
                 lineEnemy = enemy.readLine();
             }
 
-            BufferedReader player = new BufferedReader(new FileReader(currentDirectory + "\\src\\player_" + scenario + ".txt"));
+            BufferedReader player = new BufferedReader(new FileReader(currentDirectory + "\\medialab\\player_" + scenario + ".txt"));
             playerBoard = new Board(false);
             String linePlayer = player.readLine();
             while(linePlayer!=null){
@@ -234,69 +232,15 @@ public class Battleship extends Application{
     }
 
     public void enemyMove(){
-        if(xLastShot != -1){
-            if(enemyNeighbourMove(xLastShot-1, yLastShot, 1, 1, 2)) return;
-            if(enemyNeighbourMove(xLastShot+1, yLastShot, 2, 2, -1)) return;
-            if(enemyNeighbourMove(xLastShot, yLastShot-1, 3, 3, 4)) return;
-            if(enemyNeighbourMove(xLastShot, yLastShot+1, 4, 4, -1)) return;
+        int playerShips = playerBoard.ships;
+        enemy.enemyMove(playerBoard);
+        if(enemy.TotalShots == 40) displayWinner(3);
+        PointsEnemyValue.setText(Integer.toString(enemy.TotalPoints));
+        if(playerBoard.ships != playerShips){
+            ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
+            if(playerBoard.ships == 0) displayWinner(2);
         }
-        Random rand = new Random();
-        while(true) {
-            int x = rand.nextInt(10);
-            int y = rand.nextInt(10);
-            Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(x + 1)).getChildren().get(1)).getChildren().get(y);
-            if (!point.isShot) {
-                enemy.TotalShots++;
-                if(enemy.TotalShots == 40) displayWinner(3);
-                int playerShips = playerBoard.ships;
-                int points = playerBoard.placeShot(x, y, enemy);
-                if(points > 0){
-                    xLastShot = x;
-                    yLastShot = y;
-                    enemy.SuccessfulShots++;
-                    enemy.TotalPoints += points;
-                    PointsEnemyValue.setText(Integer.toString(enemy.TotalPoints));
-                }
-                if(playerBoard.ships != playerShips){
-                    ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                    if(playerBoard.ships == 0) displayWinner(2);
-                }
-                ShotsEnemyValue.setText(enemy.SuccessfulShots*100/enemy.TotalShots+"%");
-                break;
-            }
-        }
-    }
-
-    //if the last enemy's shot was successful, they'll try shooting neighbour point
-    public boolean enemyNeighbourMove(int x, int y, int currentNext, int nextIfShotSuccessful, int nextIfShotNotSuccessful){
-        if(isValidPoint(x, y) && (next == -1 || next == currentNext)){
-            Point point = (Point) ((HBox) ((HBox) playerBoard.rows.getChildren().get(x+1)).getChildren().get(1)).getChildren().get(y);
-            if (!point.isShot){
-                enemy.TotalShots++;
-                if(enemy.TotalShots == 40) displayWinner(3);
-                int playerShips = playerBoard.ships;
-                int points = playerBoard.placeShot(x, y, enemy);
-                if(points > 0){
-                    xLastShot = x;
-                    yLastShot = y;
-                    enemy.SuccessfulShots++;
-                    enemy.TotalPoints += points;
-                    PointsEnemyValue.setText(Integer.toString(enemy.TotalPoints));
-                    next = nextIfShotSuccessful;
-                }
-                else next = nextIfShotNotSuccessful;
-                if(playerBoard.ships != playerShips){
-                    ShipsPlayerValue.setText(Integer.toString(playerBoard.ships));
-                    if(playerBoard.ships == 0) displayWinner(2);
-                    next = -1;
-                    xLastShot = -1;
-                    yLastShot = -1;
-                }
-                ShotsEnemyValue.setText(enemy.SuccessfulShots*100/enemy.TotalShots+"%");
-                return true;
-            }
-        }
-        return false;
+        ShotsEnemyValue.setText(enemy.SuccessfulShots*100/enemy.TotalShots+"%");
     }
 
     public boolean isValidPoint(int x, int y){
@@ -304,15 +248,10 @@ public class Battleship extends Application{
     }
 
     public void playerMove(int x, int y){
-        player.TotalShots++;
-        if(player.TotalShots == 40) displayWinner(3);
         int enemyShips = enemyBoard.ships;
-        int points = enemyBoard.placeShot(x, y, player);
-        if(points > 0){
-            player.SuccessfulShots++;
-            player.TotalPoints += points;
-            PointsPlayerValue.setText(Integer.toString(player.TotalPoints));
-        }
+        player.playerMove(x, y, enemyBoard);
+        if(player.TotalShots == 40) displayWinner(3);
+        PointsPlayerValue.setText(Integer.toString(player.TotalPoints));
         ShotsPlayerValue.setText(player.SuccessfulShots*100/player.TotalShots+"%");
         if(enemyBoard.ships != enemyShips){
             ShipsEnemyValue.setText(Integer.toString(enemyBoard.ships));
