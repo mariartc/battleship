@@ -11,6 +11,13 @@ public class Board extends Parent {
     int ships = 5;
     String[] conditions = {null, null, null, null, null};
 
+    /**
+     * Class constructor.
+     * Creates a new board with ten rows consisting of ten cells each,
+     * with suitable padding.
+     * @param enemy a boolean that determines whether
+     *              this player is the user or the enemy
+     */
     public Board(boolean enemy) {
         this.enemy = enemy;
         Text first = new Text("        0        1        2        3        4        5        6        7        8        9");
@@ -22,7 +29,6 @@ public class Board extends Parent {
             numberedRow.getChildren().add(rowNumber);
             for (int x = 0; x < 10; x++) {
                 Point p = new Point(x, y);
-                //p.setOnMouseClicked(handler);
                 row.setPadding(new Insets(0, 0, 0, 5));
                 row.getChildren().add(p);
             }
@@ -32,13 +38,29 @@ public class Board extends Parent {
         getChildren().add(rows);
     }
 
-    //0 = all good, 1 = InvalidCountException
+    /**
+     * Places given ship to board's cells with starting cell the one
+     * represented by given coordinates depending on ship's orientation.
+     * Also checks for possible exceptions, if this type of ship is already
+     * placed using the conditions array, if a cell has already a ship placed
+     * on it, if a point is invalid, or if a point abuts on cell with ship
+     * using checkAdjacentTilesException.
+     * @param ship  ship to be placed on board
+     * @param x     int that corresponds to x-coordinate
+     * @param y     int that corresponds to y-coordinate
+     * @return      0 if ship is placed successfully
+     *              1 if OversizeException is provoked
+     *              2 if OverlapTilesException is provoked
+     *              3 if AdjacentTilesException is provoked
+     *              4 if InvalidCountException is provoked
+     */
     public int placeShip (Ship ship, int x, int y){
         if (!isValidPoint(x, y)) return 1;
         if(conditions[ship.type - 1] != null) return 4;
         else conditions[ship.type - 1] = "intact";
         if (ship.vertical) {
             for (int i = x; i < x + ship.length; i++) {
+                if (!isValidPoint(i, y)) return 1;
                 Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(i + 1)).getChildren().get(1)).getChildren().get(y);
                 if(point.ship != null) return 2;
                 if(checkAdjacentTilesException(i, y, ship)) return 3;
@@ -48,6 +70,7 @@ public class Board extends Parent {
             }
         } else {
             for (int i = y; i < y + +ship.length; i++) {
+                if (!isValidPoint(x, i)) return 1;
                 Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(x + 1)).getChildren().get(1)).getChildren().get(i);
                 if(point.ship != null) return 2;
                 if(checkAdjacentTilesException(x, i, ship)) return 3;
@@ -59,7 +82,16 @@ public class Board extends Parent {
         return 0;
     }
 
-    //returns points
+    /**
+     * Places shot to cell represented by given coordinates by given player.
+     * The shot gets added to players queue of shots by method addShot of Player class.
+     * If the shot is successful, the type of ship hit is added to addShot, the total points
+     * earned are calculated and the conditions array is refreshed.
+     * @param x      int that corresponds to x-coordinate
+     * @param y      int that corresponds to y-coordinate
+     * @param player player that places the shot
+     * @return       int of points earned by shot
+     */
     public int placeShot (int x, int y, Player player){
         Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(x+1)).getChildren().get(1)).getChildren().get(y);
         int returnValue = 0;
@@ -77,11 +109,26 @@ public class Board extends Parent {
         return returnValue;
     }
 
+    /**
+     * Checks if given coordinates represent a valid cell of a board.
+     * @param x int that corresponds to x-coordinate
+     * @param y int that corresponds to y-coordinate
+     * @return  true if the point is within the boards limits
+     *              false otherwise
+     */
     boolean isValidPoint(int x, int y){
         return (x >= 0 && x < 10 && y >= 0 && y < 10);
     }
 
-    //returns true if AdjacentTilesException will occur
+    /**
+     * Checks if an AdjacentTilesException occurs by placing a ship to cell
+     * represented by given coordinates. An AdjacentTilesException occurs if
+     * a neighbour cell has a ship of different type than given ship's placed on it.
+     * @param x     int that corresponds to x-coordinate
+     * @param y     int that corresponds to y-coordinate
+     * @param ship  ship to be placed on board
+     * @return      true if AdjacentTilesException occurs
+     */
     boolean checkAdjacentTilesException(int x, int y, Ship ship){
         if(isValidPoint(x-1, y)){
             Point point = (Point) ((HBox) ((HBox) rows.getChildren().get(x)).getChildren().get(1)).getChildren().get(y);
